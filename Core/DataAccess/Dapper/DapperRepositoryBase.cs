@@ -13,7 +13,7 @@ using Z.Dapper.Plus;
 namespace Core.DataAccess.Dapper
 {
 
-    public class DapperRepositoryBase<T> : IEntityRepository<T> where T : class, new()
+    public class DapperRepositoryBase<T> : IDapperRepository<T> where T : class, new()
 
     {
 

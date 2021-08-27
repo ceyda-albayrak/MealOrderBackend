@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Core.Utilities.Security.Jwt;
 using Core.Utilities.Security.Encryption;
+using WebAPI.Controllers;
 
 namespace WebAPI
 {
@@ -36,23 +37,17 @@ namespace WebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers();
             services.AddMemoryCache();
-            Db.connection = Configuration.GetConnectionString("connection");
-           
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebAPI", Version = "v1" });
             });
-
             services.AddDependencyResolvers(new ICoreModule[]
             {
                 new CoreModule(),
             });
-
             var tokenOptions = Configuration.GetSection("TokenOptions").Get<TokenOptions>();
-
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -79,25 +74,25 @@ namespace WebAPI
         {
             if (env.IsDevelopment())
             {
+                YemekSiparisContext.connection = Configuration.GetConnectionString("development");
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebAPI v1"));
             }
+            if (env.IsProduction())
+            {
+                YemekSiparisContext.connection = Configuration.GetConnectionString("production");
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebAPI v1"));
+            }
             app.ConfigureCustomExceptionMiddleware();
-
             app.UseCors();
             app.UseCors(builder => builder.WithOrigins("http://localhost:3000").AllowAnyHeader());
-
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthentication();
-
             app.UseAuthorization();
-
             app.UseLogging();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
